@@ -1,5 +1,12 @@
 import sre, os, getopt, sys
 
+def generate_option_parser():
+	import optparse
+	op = optparse.OptionParser()
+	op.add_option("-o", "--output", dest="output_type", 
+		help="Output type. TYPE must be html or tex", metavar="TYPE")
+	return op
+
 emph = sre.compile("\*(.*?)\*")
 regie = sre.compile("\((.*?)\)")
 q = sre.compile("\"(.*?)\"")
@@ -73,5 +80,7 @@ def main(filename):
 	print content
 	
 if __name__ == "__main__":
+	op = generate_option_parser()
+	options, args = op.parse_args()
 	main(sys.argv[-1])
 
