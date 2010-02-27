@@ -4,8 +4,6 @@ emph = sre.compile("\*(.*?)\*")
 regie = sre.compile("\((.*?)\)")
 q = sre.compile("\"(.*?)\"")
 
-FILE = "heavenly_credits.txt"
-
 def tex_filtr(line):
 	line = emph.sub("\\\\emph{\\1}", line)
 	line = regie.sub("(\\\\regie{\\1})", line)
@@ -47,14 +45,6 @@ def filter_html(line):
 def wrap(content, typ):
 	template = file("%s.template" % typ).read()
 	return template.replace("%%content%%", content)
-	
-#content = template.replace("%%content%%", content)
-
-#outfh = open("heavenly_credits.tex", 'w')
-#outfh.write(content)
-#outfh.close()
-
-#os.system("pdflatex heavenly_credits.tex")
 
 def convert(file, typ):
 	content = ""
@@ -76,12 +66,12 @@ def get_filter(typ):
 	else:
 		return lambda x: x
 
-def main():
+def main(filename):
 	typ = choose_filter(sys.argv)
-	F = file(FILE)
+	F = file(filename)
 	content = wrap(convert(F, typ), typ)
 	print content
 	
 if __name__ == "__main__":
-	main()
-	
+	main(sys.argv[-1])
+
