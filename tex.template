@@ -1,0 +1,34 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\setcounter{secnumdepth}{-2} %% no section numbers
+\usepackage{german}
+
+\newcommand{\speak}[2]
+    {\noindent\begin{tabular}{ r l }
+    \\ \parbox[t]{60pt}{\raggedleft \textbf{#1}:\\} & \parbox[t]{305pt}{\raggedright #2\\} \\
+    \end{tabular}\newline}
+
+\newcommand{\q}[1]{\glqq #1\grqq}
+\newcommand{\regie}[1]{\textit{#1}}
+
+\newcommand{\bigtitle}[1]
+    {\begin{center} {\Huge #1} \end{center} \hrule}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\bigtitle{Himmlische Punkte}
+
+\section{Dramatis Personæ}
+
+\begin{description}
+\item [Angie] ein Engel, weiß gekleidet, arrogant
+\item [Lilly] ein Dämon, schwarz oder rot gekleidet, lebhaft
+\item [Felix] ein Mensch, der von Angie und Lilly überwacht wird
+\end{description}
+
+\section{Stück}
+
+%%content%%
+
+\end{document}
