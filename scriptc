@@ -1,86 +1,129 @@
-import sre, os, getopt, sys
+#!/usr/bin/env python
+# -!- encoding: utf-8 -!-
+import re, os, getopt, sys
 
 def generate_option_parser():
-	import optparse
-	op = optparse.OptionParser()
-	op.add_option("-o", "--output", dest="output_type", 
-		help="Output type. TYPE must be html or tex", metavar="TYPE")
-	return op
+   import optparse
+   op = optparse.OptionParser()
+   op.add_option("-o", "--output", dest="output_type", 
+      help="Output type. TYPE must be html or tex", metavar="TYPE")
+   return op
 
-emph = sre.compile("\*(.*?)\*")
-regie = sre.compile("\((.*?)\)")
-q = sre.compile("\"(.*?)\"")
+_HTML_HEAD = """\
+<html>
+   <head>
+   <meta http-equiv="content-type" content="text/html; charset=utf-8">
+   <style>
+      .person { font-weight: bold; }
+      .regie { font-style: italic; }
+      th { text-align: left; }
+   </style>
+   </head>
+<body>
+"""
+_HTML_FOOT = """\
+</body></html>
+"""
 
-def tex_filtr(line):
-	line = emph.sub("\\\\emph{\\1}", line)
-	line = regie.sub("(\\\\regie{\\1})", line)
-	line = q.sub("\\\\q{\\1}", line)
-	return line
+_RTF_HEAD = "{\\rtf1\\ansi\n"
+_RTF_FOOT = "\n}"
 
-def filter_tex(line):
-	content = ""
-	line = tex_filtr(line[:-1])
-	if line.find(": ") >0:
-		speaker, text = line.split(": ")
-		content += "\speak{%s}{%s}\n" % (speaker, text)
-	else:
-		if line:
-			content += "\\par\\vspace{8pt}\\par\\noindent\\regie{%s}\n" % line
-		else:
-			content += "\n"
-	return content
-	
+class Script:
+   def __init__(self):
+      self.personae = dict()
+      self.lines = list()
+   def parseLine(self, line):
+      i = line.find(":")
+      if i == -1: # regie text
+         if line.strip() == "": return
+         self.lines.append(RegieLine(line))
+         return
+      if line[i+1] == ":": # new dramatis personae
+         person, description = line.split("::")
+         person = person.strip()
+         description = description.strip()
+         assert not person in self.personae
+         self.personae[person] = description
+         return
+      # text line
+      person = line[:i].strip()
+      assert person in self.personae, "Undeclared person '"+person+"'. Use :: to declace."
+      text = line[i+1:].strip()
+      self.lines.append(TextLine(person, text))
+   def html_string(self):
+      string = ""
+      string += _HTML_HEAD
+      string += '<table id="dramatis_personae">\n'
+      for p,d in self.personae.items():
+         string += "<tr><th>%s</th><td>%s</td></tr>\n" % (p,d)
+      string += "</table>\n"
+      for line in self.lines:
+         string += line.html_string()
+         string += "\n"
+      string += _HTML_FOOT
+      return string
+   def rtf_string(self):
+      string = ""
+      string += _RTF_HEAD
+      for p,d in self.personae.items():
+         string += "{\\b %s}: %s\par" % (p,d)
+      string += "\par"
+      for line in self.lines:
+         string += line.rtf_string()
+         string += "\par"
+      string += _RTF_FOOT
+      return string
+
+class RegieLine:
+   def __init__(self, line):
+      self.line = line
+   def html_string(self):
+      return '<p class="regie">%s</p>' % self.line
+   def rtf_string(self):
+      return rtf_encode('{\\i %s}' % self.line)
+
+class TextLine:
+   def __init__(self, person, text):
+      self.person = person
+      self.text = text
+   def html_string(self):
+      return '<p class="text"><span class="person">%s</span>: %s</p>' %\
+         (self.person, html_filtr(self.text))
+   def rtf_string(self):
+      return rtf_encode('{\\b %s}: %s' %\
+         (self.person, rtf_filtr(self.text)))
+
+emph = re.compile("\*(.*?)\*")
+regie = re.compile("\((.*?)\)")
+   
 def html_filtr(line):
-	line = emph.sub("<em>\\1</em>", line)
-	line = regie.sub("(<i>\\1</i>)", line)
-	line = q.sub("<q>\\1</q>", line)
-	return line
-	
-def filter_html(line):
-	content = ""
-	line = html_filtr(line[:-1])
-	if line.find(": ") >0:
-		speaker, text = line.split(": ")
-		content += '<p><b class="speaker">%s:</b> %s</p>\n' % (speaker, text)
-	else:
-		if line:
-			content += '<p class="regie" >%s</p>\n' % line
-		else:
-			content += "\n"
-	return content
+   line = emph.sub("<em>\\1</em>", line)
+   line = regie.sub('(<span class="regie">\\1</span>)', line)
+   return line
 
-def wrap(content, typ):
-	template = file("%s.template" % typ).read()
-	return template.replace("%%content%%", content)
+def rtf_filtr(line):
+   line = emph.sub("{\\b \\1}", line)
+   line = regie.sub('({\\i \\1})', line)
+   return line
 
-def convert(file, typ):
-	content = ""
-	if typ in ("tex", "html"):
-		f = globals()["filter_" + typ]
-		content = ''.join(map(f, file))
-	return content
+def rtf_encode(string):
+   string = string.replace(u"ß", "\\u223s")
+   string = string.replace(u"ä", "\\u228a")
+   string = string.replace(u"ö", "\\u246o")
+   string = string.replace(u"ü", "\\u252u")
+   return string
 
-def choose_filter(args):
-	args, opts = getopt.gnu_getopt(args, "t:h")
-	for arg in args:
-		if arg[0] == '-t':
-			return arg[1]
-
-def get_filter(typ):
-	funcname = "filter_" + typ
-	if funcname in  globals().keys():
-		return globals()[funcname]
-	else:
-		return lambda x: x
-
-def main(filename):
-	typ = choose_filter(sys.argv)
-	F = file(filename)
-	content = wrap(convert(F, typ), typ)
-	print content
-	
+def main(options, filename):
+   s = Script()
+   for line in open(filename):
+      s.parseLine(line.decode("utf-8"))
+   typ = options.output_type
+   content = getattr(s, typ+"_string")()
+   print content.encode("utf-8")
+   
 if __name__ == "__main__":
-	op = generate_option_parser()
-	options, args = op.parse_args()
-	main(sys.argv[-1])
+   op = generate_option_parser()
+   options, args = op.parse_args(sys.argv[1:])
+   assert len(args) == 1
+   main(options, args[0])
 
