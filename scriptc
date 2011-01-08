@@ -9,6 +9,9 @@ def generate_option_parser():
       help="Output type. TYPE must be html or tex", metavar="TYPE")
    return op
 
+def warn(msg):
+   sys.stderr.write(msg+"\n")
+
 _HTML_HEAD = """\
 <html>
    <head>
@@ -47,7 +50,8 @@ class Script:
          return
       # text line
       person = line[:i].strip()
-      assert person in self.personae, "Undeclared person '"+person+"'. Use :: to declace."
+      if not person in self.personae:
+         warn("Undeclared person '"+person+"'. Use :: to declare.")
       text = line[i+1:].strip()
       self.lines.append(TextLine(person, text))
    def html_string(self):
