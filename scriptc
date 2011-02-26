@@ -5,7 +5,7 @@ import re, os, getopt, sys
 def generate_option_parser():
    import optparse
    op = optparse.OptionParser()
-   op.add_option("-o", "--output", dest="output_type", 
+   op.add_option("-o", "--output", dest="output_type", default="html",
       help="Output type. TYPE must be html or tex", metavar="TYPE")
    return op
 
