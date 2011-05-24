@@ -94,7 +94,7 @@ class TextLine:
       return '<p class="text"><span class="person">%s</span>: %s</p>' %\
          (self.person, html_filtr(self.text))
    def rtf_string(self):
-      return rtf_encode('{\\b %s}: %s' %\
+      return rtf_encode('\\trowd\\cellx1500\\cellx9500\\intbl{\\b %s}:\\cell\\intbl %s\\cell\\row\\pard' %\
          (self.person, rtf_filtr(self.text)))
 
 emph = re.compile("\*(.*?)\*")
