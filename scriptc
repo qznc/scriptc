@@ -70,7 +70,7 @@ class Script:
       string = ""
       string += _RTF_HEAD
       for p,d in self.personae.items():
-         string += "{\\b %s}: %s\par" % (p,d)
+         string += rtf_encode("{\\b %s}: %s\par" % (p,d))
       string += "\par"
       for line in self.lines:
          string += line.rtf_string()
