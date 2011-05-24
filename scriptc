@@ -30,6 +30,10 @@ _HTML_FOOT = """\
 
 _RTF_HEAD = "{\\rtf1\\ansi\n"
 _RTF_FOOT = "\n}"
+_SPECIALS = "Titel Kurzbeschreibung Autor Lizenz".split()
+
+def rtf_twocells(x,y):
+   return rtf_encode('\\trowd\\cellx1500\\cellx9500\\intbl{\\b %s}:\\cell\\intbl %s\\cell\\row\\pard' % (x, y))
 
 class Script:
    def __init__(self):
@@ -50,9 +54,12 @@ class Script:
          return
       # text line
       person = line[:i].strip()
+      text = line[i+1:].strip()
+      if person in _SPECIALS:
+         setattr(self, person, text)
+         return
       if not person in self.personae:
          warn("Undeclared person '"+person+"'. Use :: to declare.")
-      text = line[i+1:].strip()
       self.lines.append(TextLine(person, text))
    def html_string(self):
       string = ""
@@ -69,8 +76,13 @@ class Script:
    def rtf_string(self):
       string = ""
       string += _RTF_HEAD
-      for p,d in self.personae.items():
-         string += rtf_encode("{\\b %s}: %s\par" % (p,d))
+      title = getattr(self, "Titel", u"Theaterstück")
+      string += rtf_encode("{\\b %s}\\par" % title)
+      for key in _SPECIALS:
+         if key == "Titel": continue
+         value = getattr(self, key, None)
+         if value:
+            string += rtf_twocells(key, value)
       string += "\par"
       for line in self.lines:
          string += line.rtf_string()
@@ -94,8 +106,7 @@ class TextLine:
       return '<p class="text"><span class="person">%s</span>: %s</p>' %\
          (self.person, html_filtr(self.text))
    def rtf_string(self):
-      return rtf_encode('\\trowd\\cellx1500\\cellx9500\\intbl{\\b %s}:\\cell\\intbl %s\\cell\\row\\pard' %\
-         (self.person, rtf_filtr(self.text)))
+      return rtf_twocells(self.person, rtf_filtr(self.text))
 
 emph = re.compile("\*(.*?)\*")
 regie = re.compile("\((.*?)\)")
