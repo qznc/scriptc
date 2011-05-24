@@ -3,3 +3,8 @@ Scriptc
 
 A script compiler to convert ASCII theater scripts into HTML and/or LaTeX.
 
+TODO
+----
+
+More header information like licence, author, abstract, props, title
+
