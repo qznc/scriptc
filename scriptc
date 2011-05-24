@@ -77,7 +77,7 @@ class Script:
       string = ""
       string += _RTF_HEAD
       title = getattr(self, "Titel", u"Theaterstück")
-      string += rtf_encode("{\\b %s}\\par" % title)
+      string += rtf_encode("{\\b\\fs36 %s}\\par" % title)
       for key in _SPECIALS:
          if key == "Titel": continue
          value = getattr(self, key, None)
