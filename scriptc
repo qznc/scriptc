@@ -30,7 +30,7 @@ _HTML_FOOT = """\
 
 _RTF_HEAD = "{\\rtf1\\ansi\n"
 _RTF_FOOT = "\n}"
-_SPECIALS = "Titel Kurzbeschreibung Autor Lizenz".split()
+_SPECIALS = "Titel Stichworte Stil Schauspieler Kurzbeschreibung Requisiten Autor Lizenz".split()
 
 def rtf_twocells(x,y):
    return rtf_encode('\\trowd\\cellx1500\\cellx9500\\intbl{\\b %s}:\\cell\\intbl %s\\cell\\row\\pard' % (x, y))
