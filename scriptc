@@ -84,7 +84,7 @@ class RegieLine:
    def html_string(self):
       return '<p class="regie">%s</p>' % self.line
    def rtf_string(self):
-      return rtf_encode('{\\i %s}' % self.line)
+      return rtf_encode('{\\i %s}\\par' % self.line)
 
 class TextLine:
    def __init__(self, person, text):
