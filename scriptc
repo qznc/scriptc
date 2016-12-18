@@ -84,6 +84,10 @@ class Script:
          if value:
             string += rtf_twocells(key, value)
       string += "\par"
+      string += rtf_encode("{\\b Personen:}\\par")
+      for p,d in self.personae.items():
+         string += rtf_twocells(p,d)
+      string += "\par"
       for line in self.lines:
          string += line.rtf_string()
          string += "\par"
